@@ -33,6 +33,8 @@ func SetupRouter() *mux.Router {
 	protected.HandleFunc("/transaction/deposit", controllers.Deposit).Methods("POST")
 	protected.HandleFunc("/transaction/transfer", controllers.Transfer).Methods("POST")
 	protected.HandleFunc("/transaction/history", controllers.TransactionHistory).Methods("GET")
+	protected.HandleFunc("/kyc/verify", controllers.SubmitKYC).Methods("POST")
+	protected.HandleFunc("/kyc/status", controllers.GetKYCStatus).Methods("GET")
 
 	return router
 }
