@@ -12,7 +12,10 @@ import (
 
 type contextKey string
 
-const UserIDKey contextKey = "userID"
+const (
+	UserIDKey contextKey = "userID"
+	RoleKey   contextKey = "role" // ✅ Add role key
+)
 
 func JWTAuth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -36,10 +39,13 @@ func JWTAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		// Extract user_id and add to context
+		// Extract user_id and role
 		userID := claims["user_id"]
+		role := claims["role"]
+
+		// Add both to context
 		ctx := context.WithValue(r.Context(), UserIDKey, userID)
-		next.ServeHTTP(w, r.WithContext(ctx))
+		ctx = context.WithValue(ctx, RoleKey, role)
 	})
 }
 
@@ -48,6 +54,15 @@ func GetUserIDFromContext(r *http.Request) string {
 	id := r.Context().Value(UserIDKey)
 	if id != nil {
 		return fmt.Sprintf("%v", id)
+	}
+	return ""
+}
+
+// GetUserRoleFromContext extracts the user's role from the request context
+func GetUserRoleFromContext(r *http.Request) string {
+	role := r.Context().Value(RoleKey)
+	if role != nil {
+		return fmt.Sprintf("%v", role)
 	}
 	return ""
 }

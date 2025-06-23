@@ -2,19 +2,18 @@ package controllers
 
 import (
 	"encoding/json"
+	"neobank-lite/database"
+	"neobank-lite/dto"
+	"neobank-lite/middleware"
+	"neobank-lite/models" // Assuming your User model is here
 	"net/http"
 	"strconv"
 	"time"
-
-	"neobank-lite/database"
-	"neobank-lite/middleware"
-	"neobank-lite/models" // Assuming your User model is here
 )
 
 // Deposit request structure
-type DepositRequest struct {
-	Amount float64 `json:"amount"`
-}
+
+var req dto.DepositRequest
 
 func Deposit(w http.ResponseWriter, r *http.Request) {
 	userIDStr := middleware.GetUserIDFromContext(r)
@@ -33,7 +32,7 @@ func Deposit(w http.ResponseWriter, r *http.Request) {
 	}
 	// --- KYC Status Check End ---
 
-	var req DepositRequest
+	//var req DepositRequest.
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Amount <= 0 {
 		http.Error(w, "Invalid deposit amount", http.StatusBadRequest)
 		return

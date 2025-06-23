@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"neobank-lite/database"
+	"neobank-lite/dto"
 	"neobank-lite/middleware"
 	"neobank-lite/models"
 	"net/http"
@@ -19,6 +20,7 @@ type CreateAccountRequest struct {
 }
 
 func CreateAccount(w http.ResponseWriter, r *http.Request) {
+
 	userIDStr := middleware.GetUserIDFromContext(r)
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
@@ -26,7 +28,7 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req CreateAccountRequest
+	var req dto.CreateAccountRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return

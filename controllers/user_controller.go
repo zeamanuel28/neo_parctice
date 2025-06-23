@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"neobank-lite/database"
+	"neobank-lite/dto"
 	"neobank-lite/models"
 	"neobank-lite/utils"
 	"net/http"
@@ -11,45 +12,79 @@ import (
 )
 
 func Register(w http.ResponseWriter, r *http.Request) {
-	var input models.User
-	err := json.NewDecoder(r.Body).Decode(&input)
+	// Limit the size to 10MB
+	r.ParseMultipartForm(10 << 20)
+
+	name := r.FormValue("name")
+	email := r.FormValue("email")
+	password := r.FormValue("password")
+
+	// Get uploaded file
+	file, handler, err := r.FormFile("national_id")
 	if err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+		http.Error(w, "Failed to read national ID image", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	// Generate image path (store inside uploads/national_ids/)
+	imagePath := "./uploads/national_ids/" + handler.Filename
+
+	// Save the file to disk
+	err = utils.CreateImageFile(imagePath, file)
+	if err != nil {
+		http.Error(w, "Failed to save image", http.StatusInternalServerError)
 		return
 	}
 
-	hashed, _ := utils.HashPassword(input.Password)
-	input.Password = hashed
+	// Hash password
+	hashedPassword, err := utils.HashPassword(password)
+	if err != nil {
+		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
+		return
+	}
 
-	if result := database.DB.Create(&input); result.Error != nil {
+	// Create user
+	user := models.User{
+		Name:       name,
+		Email:      email,
+		Password:   hashedPassword,
+		NationalID: imagePath,
+		KYCStatus:  "pending",
+		Role:       "user",
+	}
+
+	if result := database.DB.Create(&user); result.Error != nil {
 		http.Error(w, "User already exists or invalid data", http.StatusBadRequest)
 		return
 	}
 
+	// Success
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]string{"message": "User registered successfully!"})
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
-	var input models.User
-	err := json.NewDecoder(r.Body).Decode(&input)
+	//var input models.User
+	var req dto.LoginRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		http.Error(w, "Invalid login data", http.StatusBadRequest)
 		return
 	}
 
 	var user models.User
-	result := database.DB.Where("email = ?", input.Email).First(&user)
+	result := database.DB.Where("email = ?", req.Email).First(&user)
 	if result.Error == gorm.ErrRecordNotFound {
 		http.Error(w, "User not found", http.StatusUnauthorized)
 		return
 	}
 
-	if !utils.CheckPasswordHash(input.Password, user.Password) {
+	if !utils.CheckPasswordHash(req.Password, user.Password) {
 		http.Error(w, "Incorrect password", http.StatusUnauthorized)
 		return
 	}
 
-	token, _ := utils.GenerateJWT(user.ID)
+	token, _ := utils.GenerateJWT(user.ID, user.Role)
 	json.NewEncoder(w).Encode(map[string]string{"token": token})
 }

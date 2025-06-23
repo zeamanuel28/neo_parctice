@@ -8,5 +8,6 @@ type User struct {
 	Email      string `json:"email" gorm:"unique"`
 	Password   string `json:"-"`
 	KYCStatus  string `json:"kyc_status" gorm:"default:'pending'"`
-	NationalID string `json:"national_id"` // Add this
+	NationalID string `json:"national_id"`
+	Role       string `json:"role" gorm:"default:'user'"`
 }
