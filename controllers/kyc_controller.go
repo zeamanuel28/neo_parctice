@@ -13,6 +13,16 @@ type KYCRequest struct {
 	NationalID string `json:"national_id"`
 }
 
+// SubmitKYC godoc
+// @Summary Submit KYC verification
+// @Description Verifies the user KYC status using their registered national ID
+// @Tags KYC
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /kyc/verify [post]
 func SubmitKYC(w http.ResponseWriter, r *http.Request) {
 	userIDStr := middleware.GetUserIDFromContext(r)
 	userID, _ := strconv.Atoi(userIDStr)
@@ -36,6 +46,15 @@ func SubmitKYC(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetKYCStatus godoc
+// @Summary Get current KYC status
+// @Description Returns the current KYC verification status of the user
+// @Tags KYC
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} map[string]string
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /kyc/status [get]
 func GetKYCStatus(w http.ResponseWriter, r *http.Request) {
 	userIDStr := middleware.GetUserIDFromContext(r)
 	userID, _ := strconv.Atoi(userIDStr)

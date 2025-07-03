@@ -116,6 +116,18 @@ func handleTransfer(userID int, toAccount string, amount float64) error {
 	return tx.Commit().Error
 }
 
+// Deposit godoc
+// @Summary Deposit funds
+// @Description Deposit funds into the authenticated user's account
+// @Tags Transaction
+// @Accept json
+// @Produce json
+// @Param deposit body dto.DepositRequest true "Deposit amount"
+// @Success 200 {object} map[string]string
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Security BearerAuth
+// @Router /api/transaction/deposit [post]
 func Deposit(w http.ResponseWriter, r *http.Request) {
 	userIDStr := middleware.GetUserIDFromContext(r)
 	userID, _ := strconv.Atoi(userIDStr)
@@ -154,6 +166,18 @@ func Deposit(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Transfer godoc
+// @Summary Transfer funds
+// @Description Transfer funds to another account
+// @Tags Transaction
+// @Accept json
+// @Produce json
+// @Param transfer body TransferRequest true "Transfer info"
+// @Success 200 {object} map[string]string
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Security BearerAuth
+// @Router /api/transaction/transfer [post]
 type TransferRequest struct {
 	ToAccount string  `json:"to_account"`
 	Amount    float64 `json:"amount"`
@@ -198,6 +222,15 @@ func Transfer(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// TransactionHistory godoc
+// @Summary View transaction history
+// @Description Retrieve user's past transactions
+// @Tags Transaction
+// @Produce json
+// @Success 200 {array} models.Transaction
+// @Failure 500 {string} string "Internal Server Error"
+// @Security BearerAuth
+// @Router /api/transaction/history [get]
 func TransactionHistory(w http.ResponseWriter, r *http.Request) {
 	userIDStr := middleware.GetUserIDFromContext(r)
 	userID, _ := strconv.Atoi(userIDStr)

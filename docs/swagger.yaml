@@ -1,0 +1,327 @@
+basePath: /
+definitions:
+  dto.CreateAccountRequest:
+    properties:
+      account_type:
+        type: string
+      balance:
+        type: number
+      phone_number:
+        type: integer
+    type: object
+  dto.DepositRequest:
+    properties:
+      amount:
+        type: number
+    type: object
+  dto.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  models.Account:
+    properties:
+      account_number:
+        example: acc-123456
+        type: string
+      account_type:
+        example: savings
+        type: string
+      balance:
+        example: 1500.5
+        type: number
+      created_at:
+        example: "2025-07-03T10:30:00Z"
+        type: string
+      deleted_at:
+        example: "2025-07-03T10:30:00Z"
+        type: string
+      id:
+        example: 1
+        type: integer
+      phone_number:
+        example: 911234567
+        type: integer
+      updated_at:
+        example: "2025-07-03T10:30:00Z"
+        type: string
+      user_id:
+        example: 10
+        type: integer
+    type: object
+  models.Transaction:
+    properties:
+      amount:
+        type: number
+      from_account:
+        type: string
+      id:
+        type: integer
+      status:
+        description: success, failed
+        type: string
+      timestamp:
+        type: string
+      to_account:
+        type: string
+      type:
+        description: deposit, withdraw, transfer
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@neobank-lite.com
+    name: NeoBank Support
+    url: http://neobank-lite.com/support
+  description: REST API for NeoBank Lite Project
+  termsOfService: http://neobank-lite.com/terms
+  title: NeoBank Lite API
+  version: "1.0"
+paths:
+  /account/balance:
+    get:
+      description: Returns the account balance for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Account not found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get account balance
+      tags:
+      - Account
+  /account/create:
+    post:
+      consumes:
+      - application/json
+      description: Allows a user to create a new bank account
+      parameters:
+      - description: Account creation data
+        in: body
+        name: account
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Account'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Create a new account
+      tags:
+      - Account
+  /api/transaction/deposit:
+    post:
+      consumes:
+      - application/json
+      description: Deposit funds into the authenticated user's account
+      parameters:
+      - description: Deposit amount
+        in: body
+        name: deposit
+        required: true
+        schema:
+          $ref: '#/definitions/dto.DepositRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Deposit funds
+      tags:
+      - Transaction
+  /api/transaction/history:
+    get:
+      description: Retrieve user's past transactions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Transaction'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: View transaction history
+      tags:
+      - Transaction
+  /kyc/status:
+    get:
+      description: Returns the current KYC verification status of the user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Get current KYC status
+      tags:
+      - KYC
+  /kyc/verify:
+    post:
+      description: Verifies the user KYC status using their registered national ID
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - BearerAuth: []
+      summary: Submit KYC verification
+      tags:
+      - KYC
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user and return JWT token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+      summary: User login
+      tags:
+      - Auth
+  /register:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Register a new user with name, email, password, and national ID
+        image
+      parameters:
+      - description: Full Name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: Email Address
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: Password
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: National ID Image
+        in: formData
+        name: national_id
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Register a new user
+      tags:
+      - Auth
+schemes:
+- http
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

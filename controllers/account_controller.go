@@ -19,6 +19,18 @@ type CreateAccountRequest struct {
 	PhoneNumber int     `json:"phone_number"`
 }
 
+// CreateAccount godoc
+// @Summary Create a new account
+// @Description Allows a user to create a new bank account
+// @Tags Account
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param account body dto.CreateAccountRequest true "Account creation data"
+// @Success 201 {object} models.Account
+// @Failure 400 {string} string "Bad Request"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /account/create [post]
 func CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	userIDStr := middleware.GetUserIDFromContext(r)
@@ -69,6 +81,16 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(account)
 }
 
+// GetBalance godoc
+// @Summary Get account balance
+// @Description Returns the account balance for the authenticated user
+// @Tags Account
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Failure 404 {string} string "Account not found"
+// @Failure 500 {string} string "Internal Server Error"
+// @Router /account/balance [get]
 func GetBalance(w http.ResponseWriter, r *http.Request) {
 	userIDStr := middleware.GetUserIDFromContext(r)
 	userID, err := strconv.Atoi(userIDStr)
